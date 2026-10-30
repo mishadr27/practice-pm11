@@ -1,0 +1,176 @@
+ИНТЕРНЕТ-МАГАЗИН
+
+
+1. Сущности и атрибуты:
+Покупатель: id, имя, email.
+Категория: id, название.
+Товар: id, название, цена, id категории.
+Заказ: id, id покупателя, дата.
+Позиция заказа: id заказа, id товара, количество, цена при покупке.
+
+2. ER-диаграмма:
+Покупатель (1) ---- (N) Заказ
+Заказ (1) -------- (N) Позиция заказа
+Товар (1) -------- (N) Позиция заказа
+Категория (1) ---- (N) Товар
+Заказ и товар связаны многие-ко-многим через позиции заказа.
+
+3. Нормализация:
+1НФ: в каждой ячейке одно значение, списков товаров в ячейках нет.
+2НФ: у позиции заказа ключ (order_id, product_id).
+Количество и цена покупки зависят от всего ключа.
+У остальных таблиц ключ простой.
+3НФ: покупатели и категории хранятся отдельно, их данные не повторяются
+в заказах и товарах. Неключевые поля не зависят от других неключевых полей.
+Цена покупки хранится в позиции: со временем цена товара может измениться.
+
+
+4. Создание БД SQLite (DDL)
+
+CREATE TABLE customers (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE categories (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE products (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    price INTEGER NOT NULL CHECK (price > 0),
+    category_id INTEGER NOT NULL REFERENCES categories(id)
+);
+
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY,
+    customer_id INTEGER NOT NULL REFERENCES customers(id),
+    order_date TEXT NOT NULL
+);
+
+CREATE TABLE order_items (
+    order_id INTEGER REFERENCES orders(id) NOT NULL,
+    product_id INTEGER REFERENCES products(id) NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    price INTEGER NOT NULL CHECK (price > 0),
+    PRIMARY KEY (order_id, product_id)
+);
+
+-- 7. Два индекса: поиск товаров по категории и заказов покупателя.
+CREATE INDEX idx_product_category ON products(category_id);
+CREATE INDEX idx_order_customer ON orders(customer_id);
+
+
+5. CSV-данные и импорт
+
+Сохранить каждый блок в отдельный CSV-файл с указанным названием.
+Цены указаны в целых рублях.
+
+
+customers.csv
+
+id,name,email
+1,Иван,ivan@mail.ru
+2,Анна,anna@mail.ru
+3,Олег,oleg@mail.ru
+
+
+categories.csv
+
+id,name
+1,Ноутбуки
+2,Аксессуары
+
+
+products.csv
+
+id,name,price,category_id
+1,Ноутбук,50000,1
+2,Мышь,1000,2
+3,Клавиатура,3000,2
+
+
+orders.csv
+
+id,customer_id,order_date
+1,1,2026-10-01
+2,2,2026-10-02
+
+
+order_items.csv
+
+order_id,product_id,quantity,price
+1,1,1,50000
+1,2,2,1000
+2,3,1,3000
+
+
+Импорт через консоль sqlite3:
+Сначала открыть базу командой sqlite3 shop.db и выполнить DDL из пункта 4.
+CSV-файлы должны находиться в текущей папке.
+Затем выполнить:
+
+PRAGMA foreign_keys = ON;
+.mode csv
+.import --skip 1 customers.csv customers
+.import --skip 1 categories.csv categories
+.import --skip 1 products.csv products
+.import --skip 1 orders.csv orders
+.import --skip 1 order_items.csv order_items
+
+6. SQL-запросы
+
+
+-- 1. Все товары
+SELECT * FROM products;
+
+-- 2. Товары дешевле 5000 рублей
+SELECT name, price FROM products WHERE price < 5000;
+
+-- 3. Товары по убыванию цены
+SELECT name, price FROM products ORDER BY price DESC;
+
+-- 4. Количество покупателей
+SELECT COUNT(*) FROM customers;
+
+-- 5. Средняя цена товара
+SELECT AVG(price) FROM products;
+
+-- 6. Самая высокая цена
+SELECT MAX(price) FROM products;
+
+-- 7. Товары с названиями категорий
+SELECT products.name, categories.name
+FROM products JOIN categories ON products.category_id = categories.id;
+
+-- 8. Заказы с именами покупателей
+SELECT orders.id, customers.name, orders.order_date
+FROM orders JOIN customers ON orders.customer_id = customers.id;
+
+-- 9. Сумма каждого заказа
+SELECT order_id, SUM(quantity * price)
+FROM order_items GROUP BY order_id;
+
+-- 10. Количество товаров в каждой категории
+SELECT categories.name, COUNT(products.id)
+FROM categories LEFT JOIN products ON products.category_id = categories.id
+GROUP BY categories.id, categories.name;
+
+-- 11. Товары дороже средней цены
+SELECT name, price FROM products
+WHERE price > (SELECT AVG(price) FROM products);
+
+-- 12. Покупатели без заказов
+SELECT name FROM customers
+WHERE id NOT IN (SELECT customer_id FROM orders);
+
+
+7. Индексы
+
+Два индекса созданы в DDL выше:
+idx_product_category — для поиска товаров по категории.
+idx_order_customer — для поиска заказов покупателя.
+

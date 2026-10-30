@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+<style>text{font-family:Arial,sans-serif;font-size:16px}.h{font-size:20px;font-weight:bold}.box{fill:#f7f9fc;stroke:#34495e;stroke-width:2}.line{stroke:#34495e;stroke-width:2}.lbl{font-size:14px;fill:#555}</style>
+<rect width="100%" height="100%" fill="white"/><text x="30" y="35" class="h">ER-диаграмма «Автосалон»</text>
+<g transform="translate(40,80)"><rect class="box" width="230" height="130"/><text x="15" y="28" class="h">Марка</text><text x="15" y="58">PK brand_id</text><text x="15" y="83">name NOT NULL</text><text x="15" y="108">country NULL</text></g>
+<g transform="translate(430,60)"><rect class="box" width="260" height="180"/><text x="15" y="28" class="h">Автомобиль</text><text x="15" y="58">PK car_id</text><text x="15" y="83">FK brand_id</text><text x="15" y="108">VIN UNIQUE</text><text x="15" y="133">model, year, price</text><text x="15" y="158">color NULL</text></g>
+<g transform="translate(40,390)"><rect class="box" width="230" height="130"/><text x="15" y="28" class="h">Клиент</text><text x="15" y="58">PK client_id</text><text x="15" y="83">fio, phone</text><text x="15" y="108">email NULL</text></g>
+<g transform="translate(820,390)"><rect class="box" width="230" height="130"/><text x="15" y="28" class="h">Сотрудник</text><text x="15" y="58">PK employee_id</text><text x="15" y="83">fio, position</text><text x="15" y="108">phone NULL</text></g>
+<g transform="translate(430,350)"><rect class="box" width="260" height="190"/><text x="15" y="28" class="h">Продажа</text><text x="15" y="58">PK sale_id</text><text x="15" y="83">FK client_id</text><text x="15" y="108">FK employee_id</text><text x="15" y="133">FK car_id UNIQUE</text><text x="15" y="158">date, total</text></g>
+<line class="line" x1="270" y1="145" x2="430" y2="145"/><text x="330" y="130" class="lbl">1 : N</text>
+<line class="line" x1="560" y1="240" x2="560" y2="350"/><text x="570" y="300" class="lbl">1 : 0..1</text>
+<line class="line" x1="270" y1="455" x2="430" y2="455"/><text x="330" y="440" class="lbl">1 : N</text>
+<line class="line" x1="690" y1="455" x2="820" y2="455"/><text x="730" y="440" class="lbl">N : 1</text>
+</svg>
